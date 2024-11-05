@@ -1,0 +1,13 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  sparql-muse:
+    build: .
+    ports:
+      - "8011:8000"
+    volumes:
+      - ./app:/app
+    environment:
+      - "SPARQL_ENDPOINT"
+
