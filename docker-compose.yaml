@@ -6,8 +6,15 @@ services:
     build: .
     ports:
       - "8011:8000"
+    container_name: sparqlmuse
     volumes:
       - ./app:/app
     environment:
       - "SPARQL_ENDPOINT"
+    networks:
+      - default
+      - traefik
+networks:
+  traefik:
+    external: true
 
