@@ -19,11 +19,11 @@ app.add_middleware(
 
 @app.get("/")
 async def root(
-    q: str = Query(None),
-    subject: str = Query(None, description="Subject of the triple"),
-    predicate: str = Query(None, description="Predicate of the triple"),
-    object: str = Query(None, description="Object of the triple"),
-    suggest: str = Query(False, description="Use autosuggest instead of graph")
+    q: str = Query(default=None),
+    subject: str = Query(default=None, description="Subject of the triple"),
+    predicate: str = Query(default=None, description="Predicate of the triple"),
+    object: str = Query(default=None, description="Object of the triple"),
+    suggest: str = Query(default=None, description="Use autosuggest instead of graph")
 ):
     thistopic = '"coin/coin-related"@en'
     inputparams = {
@@ -35,17 +35,15 @@ async def root(
     }
     if suggest:
         inputparams["suggest"] = suggest
-    if suggest:
+    if suggest is not None:
         return Response(
             json.dumps(autosuggest(inputparams), indent=4),
             media_type="application/json",
             headers={"Access-Control-Allow-Origin": "*"}
         )
-    
     return Response(
         json.dumps(buildgraph(inputparams), indent=4),
         media_type="application/json",
         headers={"Access-Control-Allow-Origin": "*"}
     )
-    #return {"message": "Hello, FastAPI with Docker!"}
 

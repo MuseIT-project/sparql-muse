@@ -4,6 +4,8 @@ import io
 import re
 import json
 import os
+import logging
+
 def getdates(entity):
     pattern = r"\b(\d{4})-(\d{4})\b"
 
@@ -57,21 +59,26 @@ def buildgraph(inputparams):
     # SPARQL endpoint URL
     extra = ''
     customquery = ''
+    topicsparql = ''
     if inputparams.get("q"):
         customquery = f"FILTER(CONTAINS(STR(?relatedKeyword1), \"{inputparams['q']}\"))"
     
     # Add additional filters for subject, predicate, object if they exist
-    if inputparams.get("subject"):
+    if inputparams.get("subject") is not None and inputparams["subject"]:
         extra += f"\nFILTER(CONTAINS(STR(?s), \"{inputparams['subject']}\"))"
-    if inputparams.get("predicate"):
+    if inputparams.get("predicate") is not None and inputparams["predicate"]:
         extra += f"\nFILTER(CONTAINS(STR(?p), \"{inputparams['predicate']}\"))"
-    if inputparams.get("object"):
+    if inputparams.get("object") is not None and inputparams["object"]:
         extra += f"\nFILTER(CONTAINS(STR(?o), \"{inputparams['object']}\"))"
-    if extra and not customquery:
+    if extra: # and not customquery:
         topicsparql = ''
     else:
-        topicsparql = f"?s ?p {inputparams['topic']} ."
+        if 'topic' in inputparams:
+            topicsparql = f"?s ?p {inputparams['topic']} ."
+        if customquery:
+            topicsparql += f"\nFILTER(CONTAINS(STR(?relatedKeyword1), \"{inputparams['q']}\"))" 
     
+    logging.error(f"Input parameters: {inputparams}")
     query = f"""
     SELECT ?relatedKeyword1 ?relatedKeyword2 (COUNT(*) AS ?amount) WHERE {{
     ?s ?p ?relatedKeyword1 .
