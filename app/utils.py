@@ -11,6 +11,48 @@ def getdates(entity):
     dates = re.findall(pattern, entity)
     return dates
 
+def autosuggest(inputparams):
+    if not inputparams.get("suggest"):
+        return []
+        
+    query = f"""
+    SELECT ?object (COUNT(?subject) AS ?frequency)
+    WHERE {{
+      {{
+        ?subject <https://schema.org/keywords> ?object .
+        FILTER(CONTAINS(LCASE(STR(?subject)), "{inputparams['suggest'].lower()}"))
+      }}
+      UNION
+      {{
+        ?subject <https://schema.org/keywords> ?object .
+        FILTER(CONTAINS(LCASE(STR(?object)), "{inputparams['suggest'].lower()}"))
+      }}
+    }}
+    GROUP BY ?object
+    HAVING(?frequency > 0)
+    ORDER BY DESC(?frequency)
+    """
+
+    headers = {
+        "Accept": "text/tab-separated-values",
+        "Content-type": "application/sparql-query"
+    }
+
+    url = os.environ.get('SPARQL_ENDPOINT')
+    response = requests.post(url, headers=headers, data=query)
+    
+    suggestions = []
+    if response.status_code == 200:
+        tsv_data = io.StringIO(response.text)
+        reader = csv.DictReader(tsv_data, delimiter='\t')
+        for row in reader:
+            suggestions.append({
+                "value": row["?object"],
+                "frequency": int(row["?frequency"])
+            })
+            
+    return suggestions
+
 def buildgraph(inputparams):
     # SPARQL endpoint URL
     extra = ''
