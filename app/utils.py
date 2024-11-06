@@ -11,16 +11,30 @@ def getdates(entity):
     dates = re.findall(pattern, entity)
     return dates
 
-def buildgraph(q, thisfilter=False):
+def buildgraph(inputparams):
     # SPARQL endpoint URL
     extra = ''
-    if thisfilter:
-        extra = f"FILTER(CONTAINS(STR(?relatedKeyword1), \"{thisfilter}\"))"
+    customquery = ''
+    if inputparams.get("q"):
+        customquery = f"FILTER(CONTAINS(STR(?relatedKeyword1), \"{inputparams['q']}\"))"
+    
+    # Add additional filters for subject, predicate, object if they exist
+    if inputparams.get("subject"):
+        extra += f"\nFILTER(CONTAINS(STR(?s), \"{inputparams['subject']}\"))"
+    if inputparams.get("predicate"):
+        extra += f"\nFILTER(CONTAINS(STR(?p), \"{inputparams['predicate']}\"))"
+    if inputparams.get("object"):
+        extra += f"\nFILTER(CONTAINS(STR(?o), \"{inputparams['object']}\"))"
+    if extra and not customquery:
+        topicsparql = ''
+    else:
+        topicsparql = f"?s ?p {inputparams['topic']} ."
+    
     query = f"""
     SELECT ?relatedKeyword1 ?relatedKeyword2 (COUNT(*) AS ?amount) WHERE {{
     ?s ?p ?relatedKeyword1 .
     ?s ?p ?relatedKeyword2 .
-    ?s ?p {q} .
+    {topicsparql}
     FILTER(?relatedKeyword1 != ?relatedKeyword2) 
     FILTER(CONTAINS(STR(?relatedKeyword1), "(")) 
     FILTER(CONTAINS(STR(?relatedKeyword2), "("))
