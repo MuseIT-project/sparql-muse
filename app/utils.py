@@ -79,7 +79,7 @@ def buildgraph(inputparams):
             topicsparql += f"\nFILTER(CONTAINS(STR(?relatedKeyword1), \"{inputparams['q']}\"))" 
     
     logging.error(f"Input parameters: {inputparams}")
-    query = f"""
+    dans_query = f"""
     SELECT ?relatedKeyword1 ?relatedKeyword2 (COUNT(*) AS ?amount) WHERE {{
     ?s ?p ?relatedKeyword1 .
     ?s ?p ?relatedKeyword2 .
@@ -92,6 +92,29 @@ def buildgraph(inputparams):
     GROUP BY ?relatedKeyword1 ?relatedKeyword2 
     ORDER BY DESC(?amount)
     """
+
+    harvard_query = f"""SELECT ?relatedKeyword1 ?relatedKeyword2 (COUNT(*) AS ?amount)
+    WHERE {{
+    ?subject <https://schema.org/keywords> "{inputparams['q']}"@en .
+    ?subject <https://schema.org/keywords> ?relatedKeyword1 .
+    
+    # Find all other terms associated with those subjects
+    ?subject <https://schema.org/keywords> ?relatedKeyword2 .
+    
+    # Exclude the search term itself from results and ensure terms are different
+    FILTER(?relatedKeyword2 != "{inputparams['q']}"@en)
+    FILTER(?relatedKeyword1 != "{inputparams['q']}"@en)
+    FILTER(?relatedKeyword2 != ?relatedKeyword1)
+    }}
+    GROUP BY ?relatedKeyword1 ?relatedKeyword2 
+    ORDER BY DESC(?amount)"""
+        
+    if 'SOURCE' in os.environ:
+        if 'dans' in os.environ.get('SOURCE'):
+            query = dans_query
+    else:
+        query = harvard_query
+    
     print(query)
     #
 

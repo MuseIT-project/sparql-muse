@@ -25,9 +25,9 @@ async def root(
     object: str = Query(default=None, description="Object of the triple"),
     suggest: str = Query(default=None, description="Use autosuggest instead of graph")
 ):
-    thistopic = '"coin/coin-related"@en'
+    #thistopic = '' '"coin/coin-related"@en'
     inputparams = {
-        "topic": thistopic,
+        #"topic": thistopic,
         "q": q,
         "subject": subject,
         "predicate": predicate,
