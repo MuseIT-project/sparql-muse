@@ -79,6 +79,18 @@ def buildgraph(inputparams):
             topicsparql += f"\nFILTER(CONTAINS(STR(?relatedKeyword1), \"{inputparams['q']}\"))" 
     
     logging.error(f"Input parameters: {inputparams}")
+    # Build field filters, using schema.org/keywords as default
+    field_filters = ""
+    if inputparams.get("field"):
+        field_conditions = []
+        for field in inputparams["field"]:
+            field_conditions.append(f"?p = {field}")
+        if field_conditions:
+            field_filters = f"FILTER({' || '.join(field_conditions)})"
+    else:
+        # Default to schema.org/keywords if no fields specified
+        field_filters = "FILTER(?p = <https://schema.org/keywords>)"
+    
     dans_query = f"""
     SELECT ?relatedKeyword1 ?relatedKeyword2 (COUNT(*) AS ?amount) WHERE {{
     ?s ?p ?relatedKeyword1 .
@@ -87,6 +99,7 @@ def buildgraph(inputparams):
     FILTER(?relatedKeyword1 != ?relatedKeyword2) 
     FILTER(CONTAINS(STR(?relatedKeyword1), "(")) 
     FILTER(CONTAINS(STR(?relatedKeyword2), "("))
+    {field_filters}
     {extra}
     }} 
     GROUP BY ?relatedKeyword1 ?relatedKeyword2 
@@ -95,16 +108,17 @@ def buildgraph(inputparams):
 
     harvard_query = f"""SELECT ?relatedKeyword1 ?relatedKeyword2 (COUNT(*) AS ?amount)
     WHERE {{
-    ?subject <https://schema.org/keywords> "{inputparams['q']}"@en .
-    ?subject <https://schema.org/keywords> ?relatedKeyword1 .
+    ?subject ?p "{inputparams['q']}"@en .
+    ?subject ?p ?relatedKeyword1 .
     
     # Find all other terms associated with those subjects
-    ?subject <https://schema.org/keywords> ?relatedKeyword2 .
+    ?subject ?p ?relatedKeyword2 .
     
     # Exclude the search term itself from results and ensure terms are different
     FILTER(?relatedKeyword2 != "{inputparams['q']}"@en)
     FILTER(?relatedKeyword1 != "{inputparams['q']}"@en)
     FILTER(?relatedKeyword2 != ?relatedKeyword1)
+    {field_filters}
     }}
     GROUP BY ?relatedKeyword1 ?relatedKeyword2 
     ORDER BY DESC(?amount)"""
@@ -196,3 +210,28 @@ def buildgraph(inputparams):
     finaldata = { "nodes": nodes, "links": links }
     return finaldata
     #print(json.dumps(finaldata))
+
+def getpredicates():
+    query = """SELECT DISTINCT ?predicate
+    WHERE {
+      ?subject ?predicate ?object.
+    }
+    LIMIT 100
+    """
+
+    headers = {
+        "Accept": "text/tab-separated-values",
+        "Content-type": "application/sparql-query"
+    }
+
+    url = os.environ.get('SPARQL_ENDPOINT')
+    response = requests.post(url, headers=headers, data=query)
+    
+    predicates = []
+    if response.status_code == 200:
+        tsv_data = io.StringIO(response.text)
+        reader = csv.DictReader(tsv_data, delimiter='\t')
+        for row in reader:
+            predicates.append(row["?predicate"])
+            
+    return predicates

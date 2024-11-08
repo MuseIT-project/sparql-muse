@@ -1,7 +1,7 @@
 # app/main.py
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
-from utils import buildgraph, autosuggest
+from utils import buildgraph, autosuggest, getpredicates
 import json
 from fastapi import Query
 app = FastAPI()
@@ -23,26 +23,35 @@ async def root(
     subject: str = Query(default=None, description="Subject of the triple"),
     predicate: str = Query(default=None, description="Predicate of the triple"),
     object: str = Query(default=None, description="Object of the triple"),
-    suggest: str = Query(default=None, description="Use autosuggest instead of graph")
+    suggest: str = Query(default=None, description="Use autosuggest instead of graph"),
+    field: list[str] = Query(default=None, description="List of fields to search in")
 ):
-    #thistopic = '' '"coin/coin-related"@en'
     inputparams = {
-        #"topic": thistopic,
         "q": q,
         "subject": subject,
         "predicate": predicate,
         "object": object,
+        "suggest": suggest,
+        "field": field
     }
-    if suggest:
-        inputparams["suggest"] = suggest
+    print(suggest)
     if suggest is not None:
         return Response(
             json.dumps(autosuggest(inputparams), indent=4),
             media_type="application/json",
             headers={"Access-Control-Allow-Origin": "*"}
         )
+    
     return Response(
         json.dumps(buildgraph(inputparams), indent=4),
+        media_type="application/json",
+        headers={"Access-Control-Allow-Origin": "*"}
+    )
+
+@app.get("/predicate")
+async def get_predicates():
+    return Response(
+        json.dumps(getpredicates(), indent=4),
         media_type="application/json",
         headers={"Access-Control-Allow-Origin": "*"}
     )
