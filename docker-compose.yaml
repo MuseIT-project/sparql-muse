@@ -13,6 +13,7 @@ services:
       - "SPARQL_ENDPOINT"
       - "SECRET_KEY"
       - "ALGORITHM"
+      - "MIN_AMOUNT"
     networks:
       - default
       - traefik

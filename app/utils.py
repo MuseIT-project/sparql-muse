@@ -5,6 +5,13 @@ import re
 import json
 import os
 import logging
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Get MIN_AMOUNT from environment variables, default to 1 if not set
+MIN_AMOUNT = int(os.getenv("MIN_AMOUNT", 1))
 
 def getdates(entity):
     pattern = r"\b(\d{4})-(\d{4})\b"
@@ -181,11 +188,7 @@ def buildgraph(inputparams):
                 if not pair1 in pairs and not pair2 in pairs:
                     pairs[pair1] = True
                     pairs[pair2] = True
-                    #if item['name']:
-                    #    if item['amount'] > 1:
-                    #        if not {"id": item['name'], "group": item["group"] } in nodes:
-                    #            nodes.append( {"id": item['name'], "group": item["group"] })
-                    if item['amount'] > 1:
+                    if item['amount'] >= MIN_AMOUNT:
                         if not {"source": item["relatedKeyword1"], "target": item["relatedKeyword2"], "value": item['amount'] } in links:
                             links.append( {"source": item["relatedKeyword1"], "target": item["relatedKeyword2"], "value": item['amount'] })
 
