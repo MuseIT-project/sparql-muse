@@ -1,3 +1,6 @@
 fastapi
+python-dotenv
+python-jose[cryptography]
+PyJWT
 uvicorn
 requests
