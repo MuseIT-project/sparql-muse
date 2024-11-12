@@ -1,0 +1,3 @@
+SPARQL_ENDPOINT=https://qlever.muse-it.eu
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
