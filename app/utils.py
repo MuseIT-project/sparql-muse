@@ -6,6 +6,10 @@ import json
 import os
 import logging
 from dotenv import load_dotenv
+from difflib import SequenceMatcher
+
+def similar(a, b):
+    return SequenceMatcher(None, a.lower(), b.lower()).ratio()
 
 # Load environment variables
 load_dotenv()
@@ -214,7 +218,7 @@ def buildgraph(inputparams):
     return finaldata
     #print(json.dumps(finaldata))
 
-def getpredicates():
+def getpredicates(query: str = None):
     query = """SELECT DISTINCT ?predicate
     WHERE {
       ?subject ?predicate ?object.
@@ -236,5 +240,11 @@ def getpredicates():
         reader = csv.DictReader(tsv_data, delimiter='\t')
         for row in reader:
             predicates.append(row["?predicate"])
+            
+        # Sort predicates by similarity to query if provided
+        if query:
+            predicates.sort(key=lambda x: similar(x, query), reverse=True)
+        else:
+            predicates.sort()  # Regular alphabetical sort if no query
             
     return predicates
