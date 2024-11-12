@@ -11,6 +11,8 @@ services:
       - ./app:/app
     environment:
       - "SPARQL_ENDPOINT"
+      - "SECRET_KEY"
+      - "ALGORITHM"
     networks:
       - default
       - traefik
