@@ -4,3 +4,13 @@ python-jose[cryptography]
 PyJWT
 uvicorn
 requests
+setuptools 
+wheel
+blis==0.7.9
+numpy==1.26.3
+spacy==3.7.5
+pandas
+rdflib==7.0.0
+aiohttp
+nltk
+sentence_transformers
