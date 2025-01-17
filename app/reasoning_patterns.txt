@@ -1,0 +1,110 @@
+• ABDUCTIVE REASONING:
+◦ Using the best explanation you can find to understand why something happened, like a detective figuring out who committed a crime based on clues.
+
+• ANALOGICAL REASONING:
+◦ Understanding something new by comparing it to something familiar, like learning how a cell works by comparing it to a tiny factory.
+
+• BAYESIAN REASONING:
+◦ Updating what you believe as you get new information, like changing your mind about tomorrow's weather when you see dark clouds forming.
+
+• CAUSAL REASONING:
+Understanding how one thing causes another, like knowing that pushing a domino will make all the other dominoes fall.
+
+• COUNTERFACTUAL REASONING:
+◦ Thinking about what might have happened if things were different, like imagining how your day would have gone if you'd woken up earlier.
+
+• CRITICAL REASONING:
+◦ Carefully examining information to decide if it makes sense, like fact-checking a news story before believing it.
+
+• DEDUCTIVE REASONING:
+◦ Starting with general rules and figuring out specific cases, like knowing a dog will have four legs because all dogs have four legs.
+
+• EMOTIONAL REASONING:
+◦ Making decisions based on how you feel, like choosing what to eat based on what food makes you happy.
+
+• FORMAL REASONING:
+◦ Following strict rules of logic, like solving a math problem using specific steps and formulas.
+
+• HEURISTIC REASONING:
+Taking mental shortcuts to solve problems quickly even if the solution isn't perfect, like guessing how many jellybeans are in a jar by comparing it to a similar jar you saw before.
+
+• INDUCTIVE REASONING:
+◦ Making general rules from specific examples, like deciding all dogs are friendly after meeting several friendly dogs.
+
+• INFORMAL REASONING:
+Using everyday logic and common sense to solve problems, like figuring out what to wear based on the weather.
+
+• INTUITIVE REASONING:
+◦ Making decisions based on gut feelings without knowing exactly why, like instantly knowing something isn't right.
+
+• LEGAL REASONING:
+◦ Applying laws and rules to specific situations, like a judge deciding if someone broke a law.
+
+• LOGICAL REASONING:
+◦ Following a clear chain of if-then statements to reach a conclusion, like knowing that if all birds have wings, and a penguin is a bird, then a penguin must have wings.
+
+MATHEMATICAL REASONING:
+Using numbers and mathematical rules to solve problems,
+like calculating how much money you'll save during a sale
+
+METACOGNITIVE REASONING:
+• Thinking about how you think, like understanding why you
+made a particular decision
+
+MODAL REASONING
+• Thinking about how you think, like understanding why you
+be true (possible), and what can't possibly be true
+(impossible), like knowing that if you're holding an
+apple,
+it must exist, it could be red or green, but it
+can't be both colors at the same time.
+
+MORAL REASONING
+Deciding what is right or wrong based on your values,
+like choosing to return lost money because it's the
+right thing to do.
+
+MOTIVATIONAL REASONING
+Believing what you want to believe and finding reasons
+to support those beliefs, like insisting your favorite
+sports team will win just because you're a big fan, even
+when all the evidence suggests they'll probably lose.
+
+NARRATIVE REASONING
+Understanding things through stories and experiences,
+like learning life lessons from fairy tales.
+
+PRACTICAL REASONING
+• Figuring out how to get things done in the real world,
+like planning the steps to cook a meal.
+
+PROBABILISTIC REASONING
+Making decisions based on how likely different outcomes
+are, like bringing an umbrella when there's a 80% chance
+of rain.
+
+SOCIAL REASONING
+Understanding how people think and behave in groups,
+like knowing how to act at a formal dinner party.
+
+SPATIAL REASONING
+Understanding how things fit together in space, like
+knowing if furniture will fit in a room.
+
+SCIENTIFIC REASONING
+Using evidence and experiments to understand how things
+work, like testing different ways to grow plants.
+
+STATISTICAL REASONING
+Using numbers and data to understand patterns and make
+predictions, like analyzing sports statistics to predict
+game outcomes.
+
+SYSTEM REASONING
+Understanding how different parts work together, like
+knowing how all the parts of a car work together to make
+it run.
+
+TEMPORAL REASONING
+Understanding how things change over time, like planning
+your schedule based on how long tasks will take.

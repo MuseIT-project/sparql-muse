@@ -13,6 +13,8 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
 from datetime import datetime, timedelta
+from fastapi.responses import PlainTextResponse
+from LinkedOpenData import LinkedOpenData
 
 # Load environment variables
 load_dotenv()
@@ -28,6 +30,7 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY environment variable is not set")
 
 app = FastAPI()
+lod = LinkedOpenData()
 
 # Add CORS middleware configuration
 app.add_middleware(
@@ -133,6 +136,30 @@ async def root(
             status_code=500,
             detail=str(e)
         )
+
+@app.get("/wikilink/")
+def get_wikilink(term: str, context: str, property: str = None, format: str = "txt"):
+    wikipedia_data = lod.lookup_wikipedia_concept(term, property)
+    if wikipedia_data:
+        embedded_query = f"{term} {context}"
+        results = lod.get_sentence_embedding(embedded_query, wikipedia_data)
+        if format == "txt":
+            try:
+                return PlainTextResponse(str(results))
+            except:
+                results = "No results found"
+                return PlainTextResponse(str(results))
+        elif format == "json":
+            return json.dumps(results, indent=4)
+        else:
+            return {"error": "Invalid format"}
+    else:
+        return {"error": "No Wikipedia data found"}
+    
+@app.get("/sparql/")
+def get_sparql(query: str):
+    results = lod.run_sparql_getty(query)
+    return results
 
 @app.get("/predicate")
 async def get_predicates(auth: Optional[HTTPAuthorizationCredentials] = Depends(security)):
