@@ -429,7 +429,7 @@ class LinkedOpenData:
             records.append(text_output)
         return records
 
-    def lookup_wikipedia_concept(self, term, propertytype=None, language='en'):
+    def lookup_wikipedia_concept(self, term, propertytype=None, language='en', source=None):
         url = f"{self.wikidata_api_url}?action=wbsearchentities&search={term}&format=json&language={language}"
         if propertytype:
             url = "%s&type=%s" % (url, propertytype)
