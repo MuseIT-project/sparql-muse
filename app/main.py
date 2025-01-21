@@ -169,7 +169,7 @@ def get_wikilink(term: str, context: str, property: str = None, format: str = "t
                 results = "No results found"
                 return PlainTextResponse(str(results))
         elif format == "json":
-            return json.dumps(parse_pattern(results), indent=4)
+            return parse_pattern(results)
         else:
             return {"error": "Invalid format"}
     else:
