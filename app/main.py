@@ -8,6 +8,7 @@ from fastapi import Query
 import jwt
 from jose import JWTError
 import logging
+import re
 from typing import Optional
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -41,6 +42,24 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+def parse_pattern(pattern):
+    # Use regex to extract Title, Description, and URL
+    match = re.search(r'Title:\s*(\S+).*?Description:\s*(.*?)\s*Concept URI:\s*(.*?)\s*URL:\s*(.*)', pattern)
+
+    # Create a dictionary to hold the extracted values
+    if match:
+        if 'http' in match.group(4):
+            url = match.group(4)
+        else:
+            url = "https:%s" % match.group(4)
+        data = {
+            "title": match.group(1),  # Extracted Title
+            "description": match.group(2),  # Extracted Description
+            "url": url  # Extracted URL
+        }
+        return data
+    return None
 
 # Define token model
 class TokenData(BaseModel):
@@ -150,7 +169,7 @@ def get_wikilink(term: str, context: str, property: str = None, format: str = "t
                 results = "No results found"
                 return PlainTextResponse(str(results))
         elif format == "json":
-            return json.dumps(results, indent=4)
+            return json.dumps(parse_pattern(results), indent=4)
         else:
             return {"error": "Invalid format"}
     else:
