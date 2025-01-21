@@ -2,7 +2,7 @@
 from fastapi import FastAPI, Response, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
-from utils import buildgraph, autosuggest, getpredicates
+from utils import buildgraph, autosuggest, getpredicates, search_entities_with_sparql
 import json
 from fastapi import Query
 import jwt
@@ -158,8 +158,9 @@ async def root(
         )
 
 @app.get("/wikilink/")
-def get_wikilink(term: str, context: str, property: str = None, format: str = "txt"):
-    wikipedia_data = lod.lookup_wikipedia_concept(term, property)
+def get_wikilink(term: str, context: str, property: str = None, source: str = None, format: str = "txt"):
+    wikipedia_data = lod.lookup_wikipedia_concept(term, property, source)
+
     if wikipedia_data:
         embedded_query = f"{term} {context}"
         results = lod.get_sentence_embedding(embedded_query, wikipedia_data)

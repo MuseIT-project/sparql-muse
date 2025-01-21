@@ -248,3 +248,44 @@ def getpredicates(query: str = None):
             predicates.sort()  # Regular alphabetical sort if no query
             
     return predicates
+
+def search_entities_with_sparql(term, language="en", DEBUG=False, sparql_endpoint="https://qlever.cs.uni-freiburg.de/api/wikidata"):
+    query = f"""
+    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+    PREFIX wikibase: <http://wikiba.se/ontology#>
+    PREFIX schema: <http://schema.org/>
+    SELECT ?item ?itemLabel ?itemDescription WHERE {{
+      ?item rdfs:label "{term}"@{language}.
+      OPTIONAL {{ ?item schema:name ?itemLabel FILTER(LANG(?itemLabel) = "{language}") }}
+      OPTIONAL {{ ?item schema:description ?itemDescription FILTER(LANG(?itemDescription) = "{language}") }}
+    }}
+    LIMIT 100000
+    """
+    headers = {
+        "User-Agent": "MySPARQLSearchApp/1.0 (example@example.com)"
+    }
+    
+    response = requests.get(sparql_endpoint, params={"query": query, "format": "json"}, headers=headers)
+    if DEBUG:
+        print(response.text)
+    if response.status_code == 200:
+        data = response.json()
+        results = data.get("results", {}).get("bindings", [])
+        entities = []
+        for result in results:
+            if 'itemLabel' in result:
+                label = result["itemLabel"]["value"]
+            else:
+                label = "No label available"
+
+            entity = {
+                "title": result["item"]["value"].split("/")[-1],
+                "label": label,
+                "description": result.get("itemDescription", {}).get("value", "No description available"),
+                "url": result["item"]["value"]
+            }
+            entities.append(entity)
+        return entities
+    else:
+        code = {response.status_code}
+        return []

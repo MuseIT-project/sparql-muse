@@ -11,7 +11,12 @@ from labels import nlp_labels
 from sentence_transformers import SentenceTransformer, InputExample, losses, util
 from torch.utils.data import DataLoader
 import pandas as pd
+from utils import search_entities_with_sparql
 from urllib.parse import urlencode
+from langdetect import detect, DetectorFactory
+
+# Ensure consistent results
+DetectorFactory.seed = 0
 # Load the spaCy model
 nlp = spacy.load("en_core_web_sm")
 model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
@@ -551,6 +556,13 @@ class LinkedOpenData:
 
     def lookup_skosmos_concept(self, skosmos_host, term, vocab=None, language='en'):
         results = {}
+        if language == "en":
+            # Check if the term is in English (you can define your own logic for this check)
+            if not term.isascii():  # Example check: if the term contains non-ASCII characters
+                detected_language = detect(term)
+                if detected_language != "en":
+                    language = detected_language
+            
         url = f"{skosmos_host}/rest/v1/search?query={term}&lang={language}"
         if vocab:
             url = f"{url}&vocab={vocab}"
