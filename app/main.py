@@ -45,17 +45,18 @@ app.add_middleware(
 
 def parse_pattern(pattern):
     # Use regex to extract Title, Description, and URL
-    match = re.search(r'Title:\s*(\S+).*?Description:\s*(.*?)\s*Concept URI:\s*(.*?)\s*URL:\s*(.*)', pattern)
+    match = re.search(r'Title:\s*(\S+).*?Label:\s*(.*?)\s*Description:\s*(.*?)\s*Concept URI:\s*(.*?)\s*URL:\s*(.*)', pattern)
 
     # Create a dictionary to hold the extracted values
     if match:
-        if 'http' in match.group(4):
-            url = match.group(4)
+        if 'http' in match.group(5):
+            url = match.group(5)
         else:
-            url = "https:%s" % match.group(4)
+            url = "https:%s" % match.group(5)
         data = {
             "title": match.group(1),  # Extracted Title
-            "description": match.group(2),  # Extracted Description
+            "label": match.group(2),  # Extracted Label
+            "description": match.group(3),  # Extracted Description
             "url": url  # Extracted URL
         }
         return data
