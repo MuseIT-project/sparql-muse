@@ -158,8 +158,8 @@ async def root(
         )
 
 @app.get("/wikilink/")
-def get_wikilink(term: str, context: str, property: str = None, source: str = None, format: str = "txt"):
-    wikipedia_data = lod.lookup_wikipedia_concept(term, property, source)
+def get_wikilink(term: str, context: str, property: str = None, language: str = "en", source: str = None, format: str = "txt"):
+    wikipedia_data = lod.lookup_wikipedia_concept(term, property, language, source)
 
     if wikipedia_data:
         embedded_query = f"{term} {context}"
