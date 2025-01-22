@@ -2,7 +2,7 @@
 from fastapi import FastAPI, Response, Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
-from utils import buildgraph, autosuggest, getpredicates, search_entities_with_sparql
+from utils import buildgraph, autosuggest, getpredicates, search_entities_with_sparql, search_ontoportal_with_sparql
 import json
 from fastapi import Query
 import jwt
@@ -177,6 +177,26 @@ def get_wikilink(term: str, context: str, property: str = None, language: str = 
     else:
         return {"error": "No Wikipedia data found"}
     
+@app.get("/ontoportal/")
+def ontoportal(term: str, context: str, language: str = "en", format: str = "txt"):
+    ontoportal_data = search_ontoportal_with_sparql(term, language, DEBUG=True)
+
+    if ontoportal_data:
+        embedded_query = f"{term} {context}"
+        results = lod.get_sentence_embedding(embedded_query, ontoportal_data)
+        if format == "txt":
+            try:
+                return PlainTextResponse(str(results))
+            except:
+                results = "No results found"
+                return PlainTextResponse(str(results))
+        elif format == "json":
+            return parse_pattern(results)
+        else:
+            return {"error": "Invalid format"}
+    else:
+        return {"error": "No Wikipedia data found"}
+
 @app.get("/sparql/")
 def get_sparql(query: str):
     results = lod.run_sparql_getty(query)

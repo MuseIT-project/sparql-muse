@@ -289,3 +289,52 @@ def search_entities_with_sparql(term, language="en", DEBUG=False, sparql_endpoin
     else:
         code = {response.status_code}
         return []
+
+def search_ontoportal_with_sparql(term, language="en", DEBUG=False):
+    token = "528c4e4a-5c3e-4798-a2e2-11d96761b8ce"
+    exact_match = "false" # if language == "en" else "false"
+    lang = "all"
+    lang = "en"
+    api = f"https://data.agroportal.lirmm.fr/search?q={term}&lang={lang}&require_exact_match={exact_match}&require_definition=true&controller=search&action=index&pagesize=150&display_links=false&display_context=false&apikey={token}"
+    headers = {
+        "User-Agent": "MySPARQLSearchApp/1.0 (example@example.com)"
+    }
+    
+    response = requests.get(api, headers=headers)
+    if DEBUG:
+        print(json.dumps(response.json(), indent=4))
+    if response.status_code == 200:
+        data = response.json()
+        results = data.get("collection", {})
+        entities = []
+        for result in results:
+            if 'prefLabel' in result:
+                label = result["prefLabel"] #["value"]
+            else:
+                label = "No label available"
+
+            if 'none' in label:
+                label = label['none'][0]
+            if 'none' in result["definition"]:
+                definition = result["definition"]["none"][0]
+            else:
+                definition = result["definition"][0]
+
+            title = None
+            if '@id' in result:
+                url = result["@id"]
+                title = url.split("/")[-1]
+            else:
+                url = "No URL available"
+
+            entity = {
+                "title": title,
+                "label": label,
+                "description": definition,
+                "url": url
+            }
+            entities.append(entity)
+        return entities
+    else:
+        code = {response.status_code}
+        return []
