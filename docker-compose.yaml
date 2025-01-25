@@ -5,10 +5,12 @@ services:
   sparql-muse:
     build: .
     ports:
-      - "8011:8000"
+      - "8012:8000"
     container_name: sparqlmuse
     volumes:
       - ./app:/app
+      - ./data:/app/data
+      - ./cache:/root/.cache/huggingface
     environment:
       - "SPARQL_ENDPOINT"
       - "SECRET_KEY"
