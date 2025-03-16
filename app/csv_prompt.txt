@@ -1,0 +1,31 @@
+        Extract key entities from this search query: "{{query}}"
+        Provide the answer in CSV format where each entity has:
+        - Type (e.g., Location, Metric, Time, Categories, Suppliers, Brands, Money, Person, Item, Action, Part of house)
+        - Value
+
+        Example format:
+        Type,Value
+        Subject,capital
+        Object,table
+        Part of house,door
+        Action,born
+        Action,jumps
+        Action,gives
+        Location,Amsterdam
+        Location,London
+        Country,Netherlands
+        Country,United Kingdom
+        Metric,Temperature
+        Role,President
+        Item,Holy Water
+        Person,Perretta
+        Money,5 million
+        Question,Why
+        Question,What
+        Question,Who
+        Question,Where
+        Question,When
+        Question,How
+        Question,Which
+        Question,What
+        Question,Waarom
