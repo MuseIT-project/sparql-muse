@@ -412,7 +412,7 @@ class LinkedOpenData:
         for json_record in wikidata_records['search']:
             # Extract relevant fields from the JSON record
             title = json_record.get("title", "No Title")
-            description = json_record.get("description", "No Description")
+            description = json_record.get("description", json_record.get("label").lower())
             label = json_record.get("label", "No Label")
             concept_uri = json_record.get("concepturi", "No Concept URI")
             url = json_record.get("url", "No URL")
