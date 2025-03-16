@@ -14,4 +14,4 @@ rdflib==7.0.0
 aiohttp
 nltk
 sentence_transformers
-langdetect
+langdetect==1.0.9

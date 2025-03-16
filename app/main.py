@@ -16,6 +16,7 @@ import os
 from datetime import datetime, timedelta
 from fastapi.responses import PlainTextResponse
 from LinkedOpenData import LinkedOpenData
+from LLMentities import LLMtoGraph
 
 # Load environment variables
 load_dotenv()
@@ -196,6 +197,35 @@ def ontoportal(term: str, context: str, language: str = "en", format: str = "txt
             return {"error": "Invalid format"}
     else:
         return {"error": "No Wikipedia data found"}
+
+@app.get("/graph/")
+def get_llm(query: str, format: str = "turtle"):
+    llm = LLMtoGraph()
+    llm.question_entities(query)
+    if format == "ttl":
+        return Response(
+            content=llm.g.serialize(format=format),
+            media_type="text/turtle",  # Set the media type to Turtle
+            headers={"Content-Disposition": "attachment; filename=output.ttl"}  # Suggest a filename
+        )
+    elif format == "json-ld":  # Added condition for JSON-LD output
+        return Response(
+            content=llm.g.serialize(format="json-ld"),  # Serialize as JSON-LD
+            media_type="application/ld+json",  # Set the media type to JSON-LD
+            headers={"Content-Disposition": "attachment; filename=output.json"}  # Suggest a filename
+        )
+    else:
+        return Response(media_type="text/plain", content=llm.g.serialize(format=format))
+
+@app.post("/graph/")
+def post_llm(query: str):
+    llm = LLMtoGraph()
+    llm.question_entities(query)
+    return Response(
+        content=llm.g.serialize(format="turtle"),
+        media_type="text/turtle",  # Set the media type to Turtle
+        headers={"Content-Disposition": "attachment; filename=output.ttl"}  # Suggest a filename
+    )   
 
 @app.get("/sparql/")
 def get_sparql(query: str):

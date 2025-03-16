@@ -4,6 +4,7 @@ import csv
 from io import StringIO
 from rdflib import URIRef, RDF, OWL
 import re
+import os
 from langdetect import detect  # Import the language detection library
 
 class LLMtoGraph:
@@ -11,7 +12,6 @@ class LLMtoGraph:
         self.DEBUG = False
         self.ENTITY_OLLAMA_URL = "http://10.147.18.198:8093/api/generate"
         self.ENTITY_MODEL_NAME = "gemma3:4b"
-        self.LOCATION_MODEL_NAME = "llama3:8b"
         self.enrich_entities = []
         self.enrich_labels = []
         self.generic_instance_names = []
@@ -41,7 +41,6 @@ class LLMtoGraph:
     # Define Ollama endpoint & model
         ENTITY_OLLAMA_URL = self.ENTITY_OLLAMA_URL
         ENTITY_MODEL_NAME = self.ENTITY_MODEL_NAME  # Change model if needed (e.g., llama, gemma)
-        LOCATION_MODEL_NAME = self.LOCATION_MODEL_NAME
 
         openfile = open("./csv_prompt.txt", "r")
         prompt = openfile.read()
