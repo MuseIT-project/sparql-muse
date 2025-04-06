@@ -10,8 +10,8 @@ from langdetect import detect  # Import the language detection library
 class LLMtoGraph:
     def __init__(self):
         self.DEBUG = False
-        self.ENTITY_OLLAMA_URL = "http://10.147.18.198:8093/api/generate"
-        self.ENTITY_MODEL_NAME = "gemma3:4b"
+        self.ENTITY_OLLAMA_URL = "%s/%s" % (os.environ.get("ENTITY_OLLAMA_URL"), "/api/generate")
+        self.ENTITY_MODEL_NAME = os.environ.get("ENTITY_MODEL_NAME")
         self.enrich_entities = []
         self.enrich_labels = []
         self.generic_instance_names = []
@@ -193,6 +193,7 @@ class LLMtoGraph:
                     language_label = rdflib.Literal(label, lang=lang_detect)  # Set the language tag
                     self.g.add((subject, SCHEMA.name, label))  # Add the label without language
                     self.g.add((subject, SCHEMA.name, language_label))  # Add the label with language
+                    self.g.add((subject, RDF.type, type_uri))
                     
                     if 'concept_description' in entity:
                         self.g.add((subject, SCHEMA.description, rdflib.Literal(entity['concept_description'])))
