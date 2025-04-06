@@ -16,8 +16,11 @@ services:
       - "SECRET_KEY"
       - "ALGORITHM"
       - "MIN_AMOUNT"
+      - "TRANSFORMER_MODEL"
       - "ENTITY_OLLAMA_URL"
       - "ENTITY_MODEL_NAME"
+      - THRESHOLD
+      - CANDIDATE_MAX
     networks:
       - default
       - traefik
