@@ -158,9 +158,15 @@ async def root(
             detail=str(e)
         )
 
+@app.get("/wikistats/")
+def get_wikistats(conceptID: str):
+    stats = lod.concept_stats(conceptID)
+    return stats
+
 @app.get("/wikilink/")
 def get_wikilink(term: str, context: str, property: str = None, language: str = "en", source: str = None, format: str = "txt"):
     wikipedia_data = lod.lookup_wikipedia_concept(term, property, language, source)
+    print(wikipedia_data)
 
     if wikipedia_data:
         embedded_query = f"{term} {context}"

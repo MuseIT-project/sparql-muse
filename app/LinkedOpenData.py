@@ -2,6 +2,7 @@ import spacy
 import rdflib
 from rdflib import URIRef, Literal, Namespace, BNode
 import requests
+import re
 import json
 import aiohttp
 from urllib.parse import urlencode
@@ -9,17 +10,19 @@ import asyncio
 from nltk.tokenize import sent_tokenize
 from labels import nlp_labels
 from sentence_transformers import SentenceTransformer, InputExample, losses, util
+#from transformers.modeling_utils import no_init_weights, init_empty_weights  # Ensure this import is included
 from torch.utils.data import DataLoader
 import pandas as pd
 from utils import search_entities_with_sparql
 from urllib.parse import urlencode
 from langdetect import detect, DetectorFactory
+import os
 
 # Ensure consistent results
 DetectorFactory.seed = 0
 # Load the spaCy model
 nlp = spacy.load("en_core_web_sm")
-model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+model = SentenceTransformer(os.environ.get('SENTENCE_TRANSFORMER_MODEL', 'sentence-transformers/all-MiniLM-L6-v2'))
 
 class LinkedOpenData:
     def __init__(self, sentence=None, SPARQL_COLLECTION_DIR='sparql'):
@@ -35,6 +38,33 @@ class LinkedOpenData:
             self.doc = nlp(sentence)
         # Create an RDF graph
         self.init_graphs()
+
+    def concept_stats(self, conceptIDs, is_sparql=True):
+        stats = {}
+        for conceptID in conceptIDs.split(','):
+            sparql_query = """
+            SELECT (COUNT(*) AS ?refCount)
+            WHERE {
+            ?subject ?predicate wd:""" + conceptID + """ 
+            }
+            """
+            if is_sparql:
+                url = 'https://query.wikidata.org/sparql'
+                headers = {
+                    'Accept': 'application/json'
+                }
+                response = requests.get(url, headers=headers, params={'query': sparql_query})
+            else:
+                url = 'https://www.wikidata.org/w/api.php?action=wbgetentities&ids=' + conceptID + '&format=json'
+                response = requests.get(url)
+
+            try:
+                result = response.json()
+                stats[conceptID] = result['results']['bindings'][0]['refCount']['value']
+            except Exception as e:
+                print(e)
+                stats[conceptID] = 0
+        return stats
 
     def switch_debug(self, debug=False):
         self.DEBUG = debug  # True or False
@@ -414,6 +444,7 @@ class LinkedOpenData:
             title = json_record.get("title", "No Title")
             description = json_record.get("description", json_record.get("label").lower())
             label = json_record.get("label", "No Label")
+            wikidata_id = json_record.get("id", "No Wikidata ID")
             concept_uri = json_record.get("concepturi", "No Concept URI")
             url = json_record.get("url", "No URL")
             if any(sentence.lower() in description.lower() for sentence in self.forbidden_sentences):
@@ -425,6 +456,8 @@ class LinkedOpenData:
                 f"Description: {description} "
                 f"Concept URI: {concept_uri} "
                 f"URL: {url} "
+                f"Wikidata ID: {wikidata_id} "
+                f"Connections: {self.concept_stats(wikidata_id)[wikidata_id]} "
             )
             records.append(text_output)
         return records
@@ -712,27 +745,66 @@ class LinkedOpenData:
         self.similarities = {}
         # Compute sentence embeddings
         sentences = sources
+
+        if len(sources) == 1:
+            return sources
+        sentences = [sentence.replace("(", "").replace(")", "").replace("\-", "") for sentence in sentences]
         embeddings = model.encode(sentences)
 
-        # Compute cosine similarities
-        cos_sim = util.cos_sim(embeddings[0], embeddings[1])  # Similarity between sentence 1 and 2
-        print(f"Cosine Similarity: {cos_sim.item()}")  # Output similarity score
-
-        # Compute sentence embeddings
-        embeddings = model.encode(sentences)
-
+        # Compute cosine similarities of the first embedding to all others
+        #ranks = []
+        #for i in range(1, len(embeddings)):  # Start from the second embedding
+        #    cos_sim = util.cos_sim(embeddings[0], embeddings[i])  # Similarity between the first embedding and the i-th embedding
+        #    print(f"Cosine Similarity with embedding {i}: {cos_sim.item()}")  # Output similarity score
+        #    ranks.append(cos_sim.item())
         # Generate embedding for the keyword
-        keyword_embedding = model.encode(query)
+        #keyword_embedding = model.encode(query)
 
         # Compute cosine similarities
+        print(query)
+        keyword_embedding = model.encode(query)
         similarities = util.cos_sim(keyword_embedding, embeddings)
 
         # Rank sentences by similarity
         sorted_indices = similarities.argsort(descending=True)
         print("Top matching sentences:")
+        print("\t %s " % similarities)
         self.topcandidate = None
+        self.topconnections = []
+        self.topcandidates = []
+        self.scores = []
         for idx in sorted_indices[0]:
-            print(f"Sentence: {sentences[idx]} - Similarity: {similarities[0][idx].item():.4f}")
+            connections = re.search(r'Connections: (\d+)', sentences[idx])
+            if connections:
+                connections = int(connections.group(1))
+            else:
+                connections = 0
+#            print(f"Sentence: {sentences[idx]} - Similarity: {similarities[0][idx].item():.4f} - Connections: {connections}")
+            self.scores.append(similarities[0][idx].item())
             if not self.topcandidate:
                 self.topcandidate = sentences[idx]
-        return self.topcandidate
+            self.topcandidates.append(sentences[idx])
+            self.topconnections.append(connections)
+
+        self.THRESHOLD = float(os.environ.get('THRESHOLD', 0.2))
+        self.CANDIDATE_MAX = int(os.environ.get('CANDIDATE_MAX', 3))
+        the_most_popular = self.topcandidates[self.topconnections.index(max(self.topconnections))]
+
+        # Check distance between first, second and third candidates
+        print(self.scores)
+        distance = float(self.scores[0]) - float(self.scores[1])
+        print(f"Distance: {distance}")
+        print(self.topcandidates[0])
+        print(self.topcandidates[1])
+        #return self.topcandidates[0]
+        if abs(distance) > self.THRESHOLD:
+            return self.topcandidates[0]
+        else:
+            # Find the index of the maximum value in topconnections
+            max_index = self.topconnections.index(max(self.topconnections))  # Get the index of the highest connection value
+            self.topcandidate = self.topcandidates[max_index]  # Set the top candidate based on the highest connection value
+            
+            # Get the ID of the most popular candidate
+            most_popular_id = self.topcandidates[max_index].split(" - ")[-1]  # Assuming the ID is the last part of the candidate string
+            print(f"Most Popular Candidate ID: {most_popular_id}")  # Print or store the ID as needed
+            return self.topcandidate
