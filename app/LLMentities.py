@@ -101,7 +101,10 @@ class LLMtoGraph:
                         entity['concept_description'] = concept_info_match.group(3)  # Description
                         entity['concept_uri'] = concept_info_match.group(4)
                         entity['wikidata_url'] = concept_info_match.group(4)  # URL
-                        entity['wikidata_id'] = re.search(r'wd:([^\s]+)', concept_info_match.group(4)).group(1)
+                        try:
+                            entity['wikidata_id'] = re.search(r'wd:([^\s]+)', concept_info_match.group(4)).group(1)
+                        except:
+                            continue
                         if entity['wikidata_id'] not in self.concept_stats:
                             self.concepts.append(entity['wikidata_id'])
                         self.enrich_labels.append(entity['concept_label'])
