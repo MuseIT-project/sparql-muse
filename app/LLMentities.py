@@ -113,7 +113,7 @@ class LLMtoGraph:
                         print(entity)
                     
                 self.enrich_entities.append(entity)
-            self.concept_stats = self.get_concept_stats(self.concepts.join(','))
+            self.concept_stats = self.concept_stats(self.concepts.join(','))
             return self.enrich_entities
         
         return []
