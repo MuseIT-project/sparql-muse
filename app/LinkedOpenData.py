@@ -25,7 +25,7 @@ nlp = spacy.load("en_core_web_sm")
 model = SentenceTransformer(os.environ.get('SENTENCE_TRANSFORMER_MODEL', 'sentence-transformers/all-MiniLM-L6-v2'))
 
 class LinkedOpenData:
-    def __init__(self, sentence=None, SPARQL_COLLECTION_DIR='sparql'):
+    def __init__(self, sentence=None, rankingweights=None, SPARQL_COLLECTION_DIR='sparql'):
         # Store the sentence
         self.DEBUG = False
         self.SPARQL_COLLECTION_DIR = SPARQL_COLLECTION_DIR
@@ -33,11 +33,18 @@ class LinkedOpenData:
         self.TOKENABSNUM = -1
         self.nlp_labels = rdflib.Graph()
         self.link_wikidata = False
+        self.rankingweights = rankingweights
         # Process the sentence with spaCy
         if sentence:
             self.doc = nlp(sentence)
         # Create an RDF graph
         self.init_graphs()
+
+    def get_rankingweights(self):
+        return self.rankingweights
+
+    def set_rankingweights(self, rankingweights):
+        self.rankingweights = rankingweights
 
     def concept_stats(self, conceptIDs, is_sparql=True):
         stats = {}
@@ -797,14 +804,17 @@ class LinkedOpenData:
         print(self.topcandidates[0])
         print(self.topcandidates[1])
         #return self.topcandidates[0]
-        if abs(distance) > self.THRESHOLD:
-            return self.topcandidates[0]
+        if self.rankingweights == "popularity":
+            if abs(distance) > self.THRESHOLD:
+                return self.topcandidates[0]
+            else:
+                # Find the index of the maximum value in topconnections
+                max_index = self.topconnections.index(max(self.topconnections))  # Get the index of the highest connection value
+                self.topcandidate = self.topcandidates[max_index]  # Set the top candidate based on the highest connection value
+                
+                # Get the ID of the most popular candidate
+                most_popular_id = self.topcandidates[max_index].split(" - ")[-1]  # Assuming the ID is the last part of the candidate string
+                print(f"Most Popular Candidate ID: {most_popular_id}")  # Print or store the ID as needed
+                return self.topcandidate
         else:
-            # Find the index of the maximum value in topconnections
-            max_index = self.topconnections.index(max(self.topconnections))  # Get the index of the highest connection value
-            self.topcandidate = self.topcandidates[max_index]  # Set the top candidate based on the highest connection value
-            
-            # Get the ID of the most popular candidate
-            most_popular_id = self.topcandidates[max_index].split(" - ")[-1]  # Assuming the ID is the last part of the candidate string
-            print(f"Most Popular Candidate ID: {most_popular_id}")  # Print or store the ID as needed
-            return self.topcandidate
+            return self.topcandidates[0]

@@ -164,8 +164,10 @@ def get_wikistats(conceptID: str):
     return stats
 
 @app.get("/wikilink/")
-def get_wikilink(term: str, context: str, property: str = None, language: str = "en", source: str = None, format: str = "txt"):
+def get_wikilink(term: str, context: str, property: str = None, language: str = "en", source: str = None, rankingweights: str = None, format: str = "txt"):
     wikipedia_data = lod.lookup_wikipedia_concept(term, property, language, source)
+    if rankingweights:
+        lod.set_rankingweights(rankingweights)
     print(wikipedia_data)
 
     if wikipedia_data:
